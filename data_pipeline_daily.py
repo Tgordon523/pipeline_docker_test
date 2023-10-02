@@ -15,7 +15,7 @@ def get_data(input:str) -> pd.DataFrame:
     
     Input - date of inspection should be YYYY-MM-DD
     """
-    url = requests.get(f'https://data.cityofchicago.org/resource/4ijn-s7e5.json?inspection_date={url}T00:00:00.000')
+    url = requests.get(f'https://data.cityofchicago.org/resource/4ijn-s7e5.json?inspection_date={input}T00:00:00.000')
     if len(ast.literal_eval(url.text)) > 0:
         df = pd.DataFrame.from_records(ast.literal_eval(url.text))
         return df
@@ -26,7 +26,7 @@ def run_city_inspections_data_pipeline(
     """
     Script to run pipeline with transformation for daily retrieval
     """
-    output_path = os.path.join(output_loc, run_id)
+    output_path = os.path.join(output_loc, date)
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     )
 
     opts = parser.parse_args()
-    run_id = uuid.uuid4()
+    run_id = str(uuid.uuid4())
     run_city_inspections_data_pipeline(
-        input_file=opts.date, output_loc=opts.output_loc, run_id=run_id
+        date=opts.date, output_loc=opts.output_loc, run_id=run_id
     )

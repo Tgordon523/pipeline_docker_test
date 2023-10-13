@@ -3,29 +3,33 @@
 import argparse
 import ast
 import os
-import uuid 
-import shutil 
+import uuid
+import shutil
 
 import requests
 import pandas as pd
 
-def get_data(input:str) -> pd.DataFrame:
+
+def get_data(input: str) -> pd.DataFrame:
     """
-    Function to pull data into pandas 
-    
-    Input - date of inspection should be YYYY-MM-DD
+    Function to pull data into pandas
+
+    input - date of inspection should be YYYY-MM-DD
+    TODO - add more checks to the data format
     """
-    url = requests.get(f'https://data.cityofchicago.org/resource/4ijn-s7e5.json?inspection_date={input}T00:00:00.000')
+    url = requests.get(
+        f"https://data.cityofchicago.org/resource/4ijn-s7e5.json?inspection_date={input}T00:00:00.000"
+    )
     if len(ast.literal_eval(url.text)) > 0:
         df = pd.DataFrame.from_records(ast.literal_eval(url.text))
         return df
 
-def run_city_inspections_data_pipeline(
-    date: str, output_loc: str, run_id: str
-) -> None:
+
+def run_city_inspections_data_pipeline(date: str, run_id: str) -> None:
     """
     Script to run pipeline with transformation for daily retrieval
     """
+    output_loc = "data"
     output_path = os.path.join(output_loc, date)
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
@@ -36,15 +40,14 @@ def run_city_inspections_data_pipeline(
     except:
         print("No data")
     else:
-        # data transformations 
+        # data transformations
         df["run_id"] = run_id
         recorded_violations = df.violations.str.findall(pat=r"[0-9][0-9]\.\s").str.len()
         recorded_violations = recorded_violations.fillna(0)
         recorded_violations = pd.to_numeric(recorded_violations).astype(int)
         recorded_violations.name = "recorded_violations"
         df_fin = df.join(recorded_violations)
-        df_fin.to_parquet(output_path, partition_cols=["run_id"])
-        
+        df_fin.to_parquet(output_path, partition_cols=["inspection_date"])
 
 
 if __name__ == "__main__":
@@ -52,16 +55,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--date",
         type=str,
-        help="The date for data retrieval",
-    )
-    parser.add_argument(
-        "--output-loc",
-        type=str,
-        help="The output folder",
+        help="The date for city inspections data retrieval",
     )
 
     opts = parser.parse_args()
     run_id = str(uuid.uuid4())
-    run_city_inspections_data_pipeline(
-        date=opts.date, output_loc=opts.output_loc, run_id=run_id
-    )
+    run_city_inspections_data_pipeline(date=opts.date, run_id=run_id)

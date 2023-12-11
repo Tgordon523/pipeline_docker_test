@@ -2,17 +2,16 @@
 Pandas docker test to create idempotent pipelines locally (on Windows)
 
 ## Setup
-Using an existing docker container with pandas to execute script locally
+Build docker image to run idemptotent pipeline 
+
 ```sh
-git clone https://github.com/Tgordon523/pipeline_docker_test.git
-cd pipeline_docker_test
-docker pull amancevice/pandas
-docker run -it -v ${pwd}:/var/lib/pandas amancevice/pandas sh
+docker build -t data-pipeline .
 ```
 
-## Inside the docker container 
-Replace date paramaters to retrieve data for given date
+## Run 
+In the same directory, open command line as adminstrator to test the pipeline. 
+The default date is 2023-09-07 and can be adjusted if a valid date is entered after the name of the docker image. 
+
 ```sh
-pip install pyarrow fastparquet requests 
-python data_pipeline_inspections.py --date YYYY-MM-DD
+docker run -v ${PWD}:/pipeline_docker_test data-pipeline #date YYYY-MM-DD
 ```

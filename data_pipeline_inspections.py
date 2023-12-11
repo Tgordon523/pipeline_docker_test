@@ -29,7 +29,7 @@ def run_city_inspections_data_pipeline(date: str, run_id: str) -> None:
     """
     Script to run pipeline with transformation for daily retrieval
     """
-    output_loc = "data"
+    output_loc = "/pipeline_docker_test/data"
     output_path = os.path.join(output_loc, date)
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
